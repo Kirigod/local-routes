@@ -1,0 +1,27 @@
+{
+  "name": "local-routes",
+  "version": "1.0.1",
+  "description": "Package that allows access to the localhost using directory-based routes simply and quickly.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kirigod/local-routes.git"
+  },
+  "keywords": [
+    "http",
+    "http-server",
+    "localhost",
+    "route",
+    "routes",
+    "server",
+    "web"
+  ],
+  "author": {
+    "name": "Kirigod",
+    "email": "imperialdevelopment.contact@gmail.com"
+  },
+  "license": "MIT"
+}
