@@ -1,6 +1,6 @@
 {
   "name": "local-routes",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Package that allows access to the localhost using directory-based routes simply and quickly.",
   "main": "index.js",
   "scripts": {
