@@ -42,26 +42,12 @@ Install: `npm install local-routes`
 ```js
 const localhost = require('local-routes');
 
-const routesPath = __dirname + '/white-cat';
-const routeDirnamePath = __dirname;
-
-localhost.initServer(routesPath, routeDirnamePath);
+localhost.run({dirname: __dirname + "/white-cat"/*, host: "127.0.0.1", port: 8080*/});
 ```
 In this case, the files will be available in the browser at:
 - `http://localhost:3000/white-cat/image.png`
 - `http://localhost:3000/white-cat/index.html`
 - `http://localhost:3000/white-cat/directory-a/file.html`
-
-<br>**Please note that `http://localhost:3000` will not be available, if you want to add a file as the main one, do this:**
-```js
-const localhost = require('local-routes');
-
-const routesPath = __dirname + '/white-cat';
-const routeDirnamePath = __dirname;
-const mainFilePath = __dirname + '/white-cat/index.html';
-
-localhost.initServer(routesPath, routeDirnamePath, mainFilePath);
-```
 
 ## Links
 
