@@ -2,198 +2,94 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
-const host = "localhost";
-const port = 3000;
-
-const terminal = {
-    red: '\x1b\[31m',
-    blue: '\x1b\[34m',
-    white: '\x1b\[37m'
+const default_options = {
+    host: "localhost",
+    port: 3000
 };
 
-const results = [];
 
-function DirectoryFilter(DirectoryPath){
-    
+function run(Input){
+
+    let options = {};
+
     try{
         
-        const dirs = fs.readdirSync(DirectoryPath);
+        if(!Input.dirname) return console.log(new Error("Dirname not found!"));
+        if(fs.statSync(path.join(Input.dirname)).isDirectory() === false) return console.log(new Error(`${Input.dirname.replace(/\\/g, '/')} is not a directory!`));
+        options.dirname = Input.dirname;
     
-        for(let index=0; index < dirs.length; index++){
-            
-            if(fs.statSync(path.join(DirectoryPath, dirs[index])).isDirectory()){
-                
-                DirectoryFilter(path.join(DirectoryPath, dirs[index]));
-        
-            }else if(fs.statSync(path.join(DirectoryPath, dirs[index])).isFile()){
-
-                results.push(path.join(DirectoryPath, dirs[index]))
-        
-            };
+        if(Input.host) options.host = Input.host;
+        if(!Input.host) options.host = default_options.host;
     
-        };
+        if(Input.port) options.port = Input.port;
+        if(!Input.port) options.port = default_options.port;
 
-        return results;
-
-    }catch(error){
-        
-        return terminal.red + error + terminal.white;
-    
+    }catch{
+        return console.log("Invalid input!");
     };
 
-};
-
-
-function Verify(DirectoryPath, Path, Main){
-    
-    return new Promise((resolve, reject) => {
-        
+    const server = http.createServer((request, response) => {
         try{
             
-            Path = Path.replace(/\\/g, '/');
-            DirectoryPath = DirectoryPath.replace(/\\/g, '/');
-            if(Main !== undefined) Main = Main.replace(/\\/g, '/');
+            if(fs.existsSync(options.dirname + request.url) === false || fs.statSync(path.join(options.dirname + request.url)).isFile() === false){
+                response.writeHead(404);
             
-            if(fs.existsSync(DirectoryPath) === false){
+                fs.readFile(path.join(__dirname + "/404.html"), function (error, data){
+                    
+                    if(error){
+                        response.end("404 Not Found");
+                        return console.log("404 Not Found");
+                    };
                 
-                reject(terminal.white + "Error: " + terminal.red + DirectoryPath + terminal.white + " not found!");
+                    response.end(data);
             
-            }else if(fs.existsSync(Path) === false){
-                
-                reject(terminal.white + "Error: " + terminal.red + Path + terminal.white + " not found!");
-            
-            }else if(Main !== undefined && fs.existsSync(Main) === false){
-                
-                reject(terminal.white + "Error: " + terminal.red + Main + terminal.white + " not found!");
-            
+                });
+        
             }else{
-                
-                if(fs.statSync(path.join(DirectoryPath)).isDirectory() === false){
+                fs.readFile(path.join(options.dirname + request.url), function (fileError, file){
                     
-                    reject(terminal.white + "Error: " + terminal.red + DirectoryPath + terminal.white + " is not a directory!");
-                
-                }else if(fs.statSync(path.join(Path)).isDirectory() === false){
+                    if(fileError){
+                        response.writeHead(500);
+                        fs.readFile(path.join(__dirname + "/500.html"), function (error, data){
+                            
+                            if(error){
+                                response.end("500 Internal Server Error");
+                                return console.log("Internal Server Error");
+                            };
+                        
+                            response.end(data);
                     
-                    reject(terminal.white + "Error: " + terminal.red + Path + terminal.white + " is not a directory!");
+                        });
                 
-                }else if(Main !== undefined && fs.statSync(path.join(Main)).isFile() === false){
-                    
-                    reject(terminal.white + "Error: " + terminal.red + Path + terminal.white + " is not a file!");
-                
-                }else{
+                    }else{
 
-                    if(DirectoryPath.startsWith(Path) === false) return reject(terminal.white + "Error: " + terminal.red + "Unexpected input!" + terminal.white)
-
-                    resolve(DirectoryFilter(DirectoryPath));
-            
-                };
-        
+                        response.writeHead(200);
+                        response.end(file);
+                
+                    };
+                });
             };
-    
-        }catch(error){
-            
-            reject(terminal.red + error + terminal.white);
         
+        }catch{
+            response.writeHead(500);
+            fs.readFile(path.join(__dirname + "/500.html"), function (error, data){
+                
+                if(error){
+                    response.end("500 Internal Server Error");
+                    return console.log("Internal Server Error");
+                };
+                
+                response.end(data);
+            
+            });
         };
-    
+    });
+
+    server.listen(options.port, options.host, () => {
+        console.log(`Server running on http://${options.host}:${options.port}`);
     });
 
 };
 
 
-function initServer(Directory, Path, Main){
-    
-    try{
-        
-        Verify(Directory, Path, Main).then(data => {
-            
-            const routes = [];
-            const URL = [];
-            const _GET = [];
-            
-            if(Main !== undefined){
-                
-                fs.readFile(path.join(Main), function (error, fileContent){
-                    
-                    if(error) return console.log(terminal.red + error + terminal.white);
-                    
-                    _GET.push({ content: fileContent.toString("UTF-8") });
-                
-                });
-            
-            };
-        
-            for(let index=0; index < data.length; index++){
-                
-                routes.push(data[index].replace(Path, '').replace(/\\/g, '/'));
-            
-                fs.readFile(path.join(data[index]), function (error, fileContent){
-                    
-                    if(error) return console.log(terminal.red + error + terminal.white);
-                
-                    URL.push({ url: data[index].replace(Path, '').replace(/\\/g, '/'), content: fileContent.toString("UTF-8") });
-            
-                });
-        
-            };
-        
-            const server = http.createServer((request, response) => {
-                
-                const Index = routes.indexOf(request.url.replace(/\\/g, '/'));
-            
-                if(request.url === "/" && Main !== undefined){
-
-                    response.writeHead(200);
-                    response.end(_GET[0].content);
-
-                }else if(Index > -1){
-                    
-                    const searchURL = URL.findIndex((search) => search.url == request.url);
-                
-                    response.writeHead(200);
-                    response.end(URL[searchURL].content);
-            
-                }else{
-                    
-                    response.writeHead(404);
-                    response.end(`
-                    <!DOCTYPE html>
-                    <html lang="en">
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>404</title>
-                    </head>
-                    <body style="background: whitesmoke;">
-                        <h1 style="color: grey">404 Not Found</h1>
-                    </body>
-                    </html>
-                    `);
-            
-                };
-        
-            });
-        
-            server.listen(port, host, () => {
-                
-                console.log(`Server running on ${terminal.red}http:${terminal.blue}//${host}:${port}${terminal.white}`);
-        
-            });
-    
-        }).catch(error => {
-            
-            return console.log(terminal.red + error + terminal.white);
-    
-        });
-
-    }catch(error){
-        
-        return console.log(terminal.red + error + terminal.white);
-
-    };
-    
-};
-
-
-module.exports.initServer = initServer;
+module.exports.run = run;
