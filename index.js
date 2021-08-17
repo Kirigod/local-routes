@@ -32,32 +32,51 @@ function run(Input){
         try{
             
             if(fs.existsSync(options.dirname + request.url) === false || fs.statSync(path.join(options.dirname + request.url)).isFile() === false){
-                response.writeHead(404);
+                response.writeHead(404, {'Content-Type' : 'text/html'});
             
-                fs.readFile(path.join(__dirname + "/404.html"), function (error, data){
+                fs.readFile(path.join(__dirname + "/src/html/404.html"), function(error, data){
                     
                     if(error){
                         response.end("404 Not Found");
                         return console.log("404 Not Found");
                     };
-                
-                    response.end(data);
+
+                    fs.readFile(path.join(__dirname + "/src/css/404.css"), function(error, css){
+
+                        if(error){
+                            response.end("404 Not Found");
+                            return console.log("404 Not Found");
+                        };
+
+                        response.end(data.toString("UTF-8").replace("<style></style>", `<style>${css}</style>`));
+
+                    });
             
                 });
         
             }else{
-                fs.readFile(path.join(options.dirname + request.url), function (fileError, file){
+
+                fs.readFile(path.join(options.dirname + request.url), function(fileError, file){
                     
                     if(fileError){
                         response.writeHead(500);
-                        fs.readFile(path.join(__dirname + "/500.html"), function (error, data){
+                        fs.readFile(path.join(__dirname + "/src/html/500.html"), function(error, data){
                             
                             if(error){
                                 response.end("500 Internal Server Error");
                                 return console.log("Internal Server Error");
                             };
-                        
-                            response.end(data);
+
+                            fs.readFile(path.join(__dirname + "/src/css/500.css"), function(error, css){
+
+                                if(error){
+                                    response.end("500 Internal Server Error");
+                                    return console.log("Internal Server Error");
+                                };
+
+                                response.end(data.toString("UTF-8").replace("<style></style>", `<style>${css}</style>`));
+
+                            });
                     
                         });
                 
@@ -71,15 +90,26 @@ function run(Input){
             };
         
         }catch{
+
             response.writeHead(500);
-            fs.readFile(path.join(__dirname + "/500.html"), function (error, data){
+            
+            fs.readFile(path.join(__dirname + "/src/html/500.html"), function(error, data){
                 
                 if(error){
                     response.end("500 Internal Server Error");
                     return console.log("Internal Server Error");
                 };
                 
-                response.end(data);
+                fs.readFile(path.join(__dirname + "/src/css/500.css"), function(error, css){
+
+                    if(error){
+                        response.end("500 Internal Server Error");
+                        return console.log("Internal Server Error");
+                    };
+
+                    response.end(data.toString("UTF-8").replace("<style></style>", `<style>${css}</style>`));
+
+                });
             
             });
         };
