@@ -32,7 +32,7 @@ function run(Input){
         try{
             
             if(fs.existsSync(options.dirname + request.url) === false || fs.statSync(path.join(options.dirname + request.url)).isFile() === false){
-                response.writeHead(404, {'Content-Type' : 'text/html'});
+                response.writeHead(404);
             
                 fs.readFile(path.join(__dirname + "/src/html/404.html"), function(error, data){
                     
