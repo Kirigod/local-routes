@@ -31,7 +31,7 @@ Install: `npm install local-routes`
 .
 ├──index.js
 ├──package.json
-└──/white-cat/
+└──/src/
      ├──image.png
      ├──index.html
      └──/directory-a/
@@ -42,12 +42,12 @@ Install: `npm install local-routes`
 ```js
 const localhost = require('local-routes');
 
-localhost.run({dirname: __dirname + "/white-cat"/*, host: "127.0.0.1", port: 8080*/});
+localhost.run({dirname: __dirname + "/src"/*, host: "127.0.0.1", port: 8080*/});
 ```
 In this case, the files will be available in the browser at:
-- `http://localhost:3000/white-cat/image.png`
-- `http://localhost:3000/white-cat/index.html`
-- `http://localhost:3000/white-cat/directory-a/file.html`
+- `http://localhost:3000/image.png`
+- `http://localhost:3000/index.html`
+- `http://localhost:3000/directory-a/file.html`
 
 ## Links
 
